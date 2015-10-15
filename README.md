@@ -1,9 +1,9 @@
 # rsall
 
-A (backup) program to rsync a list of local filesystem trees on a mac to destinations on multiple external drives mounted on the mac.
+A (backup) program to rsync local filesystem trees on a mac to destinations on multiple external drives mounted on the mac.  That is, for each "source tree" we create multiple copies of it, each on a different external drive.
 
 ## Wake Up Call
 
-External drives may be sleeping and need to be spun up.  So we write a random file to the mountpoint directory, fsync() the file, and delete it.  We call this waking up the drive.  We do this before rsync'ing to the drive to avoid an I/O error.
+The external drives may be sleeping and need to be woken up.  In order to wake up a drive, we write a random file to its mountpoint directory, sync the file to disk, and delete the file.  We do this for all listed drives before rsync'ing to avoid an I/O error from the operating system.
 
-We keep track of the state of each rsync command (command itself, status, stdout, stderr), and if any has a problem, we report this state at the end of the run.
+We keep track of the state of each rsync command (the command and its args, and its status, stdout, and stderr), and if any command has a problem, we report its state at the end of the run.
