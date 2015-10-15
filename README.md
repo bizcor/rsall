@@ -1,6 +1,6 @@
 # rsall
 
-A program to rsync a list local filesystem trees on a mac to destinations on multiple external drives mounted on the mac.
+A (backup) program to rsync a list of local filesystem trees on a mac to destinations on multiple external drives mounted on the mac.
 
 ## A Wake Up Call
 
