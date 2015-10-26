@@ -4,9 +4,11 @@ import os
 import random
 import socket
 import sys
+from time import sleep
 sys.path.append(os.environ['HOME'] + '/Dropbox/sys/python/lib/mylib')
 from system_command import system_command
 
+MAX_WAKEUP_ATTEMPTS = 3
 USER = os.environ.get('LOGNAME')
 HOST = socket.gethostname().split('.')[0]
 volume_names = ['delenn', 'gkar', 'londo', 'sheridan']
@@ -42,6 +44,14 @@ def get_tickle_file_basename():
                                   str(random.randint(low, high)))
 
 
+def write_to_tickle_file(file):
+    with open(file, 'w') as tickle_file:
+        tickle_file.write(':-D')
+        tickle_file.flush()
+        os.fsync(tickle_file)
+    os.remove(file)
+
+
 def wake_up_external_drives(volume_names):
     '''wake up external drives so that we don't get i/o errors rsync'ing
        to them.  for each volume, write a random file to it and fsync() the
@@ -59,11 +69,19 @@ def wake_up_external_drives(volume_names):
             print "waking {}...".format(volume_name)
             tickle_file_path = "{}/{}".format(VOLUME_PATH,
                                               get_tickle_file_basename())
-            with open(tickle_file_path, 'w') as tickle_file:
-                tickle_file.write(':-D')
-                tickle_file.flush()
-                os.fsync(tickle_file)
-            os.remove(tickle_file_path)
+            attempt=0
+            while attempt < MAX_WAKEUP_ATTEMPTS:
+                attempt += 1
+                if attempt > 1:
+                    print "[{}: attempt #{}]".format(volume_name, attempt)
+                try:
+                    write_to_tickle_file(tickle_file_path)
+                    break
+                except Exception:
+                    if attempt < MAX_WAKEUP_ATTEMPTS:
+                        sleep(1)
+                    else:
+                        raise
 
             print "...{} is awake".format(volume_name)
             exit(0)
